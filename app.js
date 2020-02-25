@@ -7,9 +7,11 @@ fetch(BASE_URL)
     .then(dogs => {
         dogs.map(createDogCard)
     })
+
 function parseJSON(response) {
     return response.json()
 }
+
 function createDogCard(dog) {
     const dogCard = document.createElement('div')
     dogCard.className = 'card'
@@ -24,12 +26,37 @@ function createDogCard(dog) {
     const deleteButton = document.createElement('button')
     deleteButton.textContent = 'DELETE'
     deleteButton.addEventListener('click', () => {
-        console.log("event.target", event.target.parentNode)
+        // console.log("event.target", event.target.parentNode)
         fetch(`${BASE_URL}/${dog.id}`, {
             method: 'DELETE'
         }).then(event.target.parentNode.remove())
     })
-    dogCard.append(deleteButton)
+
+    const editDogForm = document.createElement('form')
+    editDogForm.className = 'form-group'
+    editDogForm.innerHTML = `
+    <lable for="age"> Age: </lable>
+    <input type="number" id="${dog.id} name="age" placeholder="Age"/>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    `
+
+    editDogForm.addEventListener('submit', () => {
+        event.preventDefault()
+        const age = document.getElementById(`${dog.id}`).value
+        console.log(age)
+
+        fetch(`${BASE_URL}/${dog.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                age
+            })
+        })
+    })
+    dogCard.append(editDogForm, deleteButton)
     dogsContainer.appendChild(dogCard)
 }
 
@@ -42,16 +69,26 @@ dogForm.addEventListener('submit', () => {
     const image = formData.get('image')
     const age = formData.get('age')
 
-    createDogCard({ name, breed, image, age })
+    createDogCard({
+        name,
+        breed,
+        image,
+        age
+    })
 
     fetch(BASE_URL, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, breed, image, age })
-    }).then(parseJSON)
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name,
+                breed,
+                image,
+                age
+            })
+        }).then(parseJSON)
         .then(console.log)
         .then(dogForm.reset())
 
